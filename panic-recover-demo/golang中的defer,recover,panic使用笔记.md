@@ -27,17 +27,25 @@ func demo0() {
 运行以后:
 
 in main
+
 panic: demo0 unknown err
 
 goroutine 1 [running]:
+
 main.demo0()
-	F:/Golang/src/development/panic-recover-demo/panic_reconver.go:16 +0x40
+
+​	F:/Golang/src/development/panic-recover-demo/panic_reconver.go:16 +0x40
+
 main.main()
-	F:/Golang/src/development/panic-recover-demo/panic_reconver.go:10 +0x8f
+
+​	F:/Golang/src/development/panic-recover-demo/panic_reconver.go:10 +0x8f
 exit status 2
+
 [Finished in 1.3s with exit code 1]
 
 可以看到如果在panic发生的时候，没有recover，那么process main的输出因为被中断了，同时panic发生以后，执行所有的defer，所以就是上面这个打印输出的信息了。
+
+
 
 ####2，panic，遇到defer recover的时候,这种是大多数人的写法
 
@@ -73,8 +81,11 @@ func demo1() {
 运行以后：
 
 demo1 unknown err
+
 process main
+
 in main
+
 [Finished in 1.4s]
 
 从运行情况看，panic终止了demo1()中的demo1 process输出，但同时当demo1中的panic被demo1()中的defer recover()以后，到了main的流程，他是走的正常逻辑，所以输出了prcocess main。
@@ -119,8 +130,11 @@ func demo2() {
 运行结果:
 
 demo2 unknown err
+
 process main
+
 in main
+
 [Finished in 1.7s]
 
 可以看到这种情况和上面demo1()例子中那种不进行封装的处理结果是一样的，他也是可以被recover的。
@@ -170,14 +184,21 @@ func demo3() {
 运行结果:
 
 in main
+
 panic: demo3 unknown err
 
 goroutine 1 [running]:
+
 main.demo3()
-	F:/Golang/src/development/panic-recover-demo/panic_reconver.go:57 +0x5c
+
+​	F:/Golang/src/development/panic-recover-demo/panic_reconver.go:57 +0x5c
+
 main.main()
-	F:/Golang/src/development/panic-recover-demo/panic_reconver.go:10 +0x8f
+
+​	F:/Golang/src/development/panic-recover-demo/panic_reconver.go:10 +0x8f
+
 exit status 2
+
 [Finished in 1.3s]
 
 从运行的结果看，这种代码是错误的，因为他不能将能被recover的错误或者panic进行recover。

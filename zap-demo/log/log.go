@@ -86,7 +86,7 @@ var (
 )
 
 type Logger struct {
-	log   *zap.Logger // zap ensure that zap.Logger is safe for concurrent use
+	log   *zap.SugaredLogger // zap ensure that zap.Logger is safe for concurrent use
 	level Level
 }
 
@@ -106,43 +106,44 @@ func NewLogger(writer io.Writer, level Level, opts ...Option) *Logger {
 		zapcore.AddSync(writer),
 		zapcore.Level(level),
 	)
+	zap_logger:=zap.New(core, opts...)
 	logger := &Logger{
-		log:   zap.New(core, opts...),
+		log:   zap_logger.Sugar(),
 		level: level,
 	}
 	return logger
 }
 
-func (l *Logger) Debug(msg string, fields ...Field) {
-	l.log.Debug(msg, fields...)
+func (l *Logger) Debug(fmt string,args ...interface{}) {
+	l.log.Debugf(fmt,args...)
 }
 
-func (l *Logger) Info(msg string, fields ...Field) {
-	l.log.Info(msg, fields...)
+func (l *Logger) Info(fmt string,args ...interface{}) {
+	l.log.Infof(fmt,args...)
 }
 
-func (l *Logger) Warn(msg string, fields ...Field) {
-	l.log.Warn(msg, fields...)
+func (l *Logger) Warn(fmt string,args ...interface{}) {
+	l.log.Warnf(fmt,args...)
 }
 
-func (l *Logger) Error(msg string, fields ...Field) {
-	l.log.Error(msg, fields...)
+func (l *Logger) Error(fmt string,args ...interface{}) {
+	l.log.Errorf(fmt,args...)
 }
 
-func (l *Logger) DPanic(msg string, fields ...Field) {
-	l.log.DPanic(msg, fields...)
+func (l *Logger) DPanic(fmt string,args ...interface{}) {
+	l.log.DPanicf(fmt,args...)
 }
 
-func (l *Logger) Panic(msg string, fields ...Field) {
-	l.log.Panic(msg, fields...)
+func (l *Logger) Panic(fmt string,args ...interface{}) {
+	l.log.Panicf(fmt,args...)
 }
 
-func (l *Logger) Fatal(msg string, fields ...Field) {
-	l.log.Fatal(msg, fields...)
+func (l *Logger) Fatal(fmt string,args ...interface{}) {
+	l.log.Fatalf(fmt,args...)
 }
 
-func (l *Logger) With(fields ...Field) *Logger {
-	log := l.log.With(fields...)
+func (l *Logger) With(args ...interface{}) *Logger {
+	log := l.log.With(args...)
 	l.log = log
 	return l
 }
@@ -172,7 +173,8 @@ func NewLoggerTeeWithRotate(tops []TeeOption, opts ...Option) *Logger {
 	cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString(t.Format("2006-01-02T15:04:05.000Z0700"))
 	}
-
+	//enc_cfg := zapcore.NewJSONEncoder(cfg.EncoderConfig)
+	enc_cfg := zapcore.NewConsoleEncoder(cfg.EncoderConfig)
 	for _, top := range tops {
 		top := top
 
@@ -189,15 +191,15 @@ func NewLoggerTeeWithRotate(tops []TeeOption, opts ...Option) *Logger {
 		})
 
 		core := zapcore.NewCore(
-			zapcore.NewJSONEncoder(cfg.EncoderConfig),
+			enc_cfg,
 			zapcore.AddSync(w),
 			lv,
 		)
 		cores = append(cores, core)
 	}
-
+	zap_logger := zap.New(zapcore.NewTee(cores...), opts...)
 	logger := &Logger{
-		log: zap.New(zapcore.NewTee(cores...), opts...),
+		log: zap_logger.Sugar(),
 	}
 	return logger
 }

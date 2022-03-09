@@ -3,6 +3,9 @@ package main
 import (
 	xhttp "development/http-server-demo/http"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"gitee.com/lihp1603/utils/log"
 )
@@ -19,7 +22,17 @@ func main() {
 	mux.RegisterHander("/create", http.MethodGet, onCreateNotifyConfig)
 
 	server := xhttp.NewHttpApiServer(mux)
-	if err := server.Start(":8090", "", "", false); err != nil {
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		//wait
+		<-c
+		server.Stop()
+		log.Info("stop server...")
+	}()
+
+	if err := server.Start(":9090", "", "", false); err != nil {
 		log.Error("%s", err.Error())
 	}
 	return

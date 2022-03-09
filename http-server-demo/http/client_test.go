@@ -6,7 +6,7 @@ import (
 )
 
 func TestHttpApiClient_Get(t *testing.T) {
-	url := "http://127.0.0.1:8090/create"
+	url := "http://127.0.0.1:9090/create"
 	client := NewHttpApiClient()
 	var body []byte
 	resp, err := client.Get(context.Background(), url)
